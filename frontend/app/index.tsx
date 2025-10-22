@@ -38,8 +38,8 @@ export default function Home() {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Ionicons name="home" size={32} color="#FFFFFF" />
-            <Text style={styles.title}>Roommate Finder</Text>
-            <Text style={styles.subtitle}>Find your perfect match today</Text>
+            <Text style={styles.title}>Bindle</Text>
+            <Text style={styles.subtitle}>Find your perfect roomate today!</Text>
           </View>
         </View>
       </View>
