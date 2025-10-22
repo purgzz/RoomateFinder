@@ -110,3 +110,15 @@ These files do Not appear on github and require the dev to create on their own.
 
 This project is for educational purposes.
 
+
+## when a user swipes we track it: 
+ LOG  pass: Alex Johnson
+ LOG  pass: Sarah Chen
+ LOG  pass: Marcus Rodriguez
+ LOG  pass: Emma Wilson
+ LOG  pass: David Kim
+ LOG  like: Alex Johnson
+ LOG  pass: Sarah Chen
+ LOG  like: Marcus Rodriguez
+ LOG  like: Emma Wilson
+ LOG  like: David Kim

@@ -23,12 +23,33 @@ export default function Home() {
     })();
   }, []);
 
-  // Create Google Maps embed URL
+  // Create Google Maps embed URL with iframe
   const getMapUrl = () => {
     const lat = location?.coords.latitude || 37.78825;
     const lng = location?.coords.longitude || -122.4324;
     const apiKey = Constants.expoConfig?.extra?.googleMapsApiKey || 'YOUR_GOOGLE_MAPS_API_KEY';
-    return `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${lat},${lng}&zoom=15`;
+    
+    // Create HTML with iframe for Google Maps Embed API
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { margin: 0; padding: 0; }
+            iframe { width: 100%; height: 100%; border: none; }
+          </style>
+        </head>
+        <body>
+          <iframe 
+            src="https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${lat},${lng}&zoom=15"
+            allowfullscreen>
+          </iframe>
+        </body>
+      </html>
+    `;
+    
+    return html;
   };
 
   return (
@@ -40,7 +61,7 @@ export default function Home() {
         <View style={styles.mapContainer}>
           <WebView
             style={styles.map}
-            source={{ uri: getMapUrl() }}
+            source={{ html: getMapUrl() }}
             javaScriptEnabled={true}
             domStorageEnabled={true}
             startInLoadingState={true}
