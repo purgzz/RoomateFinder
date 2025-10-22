@@ -13,6 +13,7 @@ import {
   Dimensions
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -72,8 +73,11 @@ export default function Profile() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Your Profile</Text>
-            <Text style={styles.subtitle}>Customize your roommate preferences</Text>
+            <View style={styles.headerContent}>
+              <Ionicons name="person-circle" size={32} color="#6366F1" />
+              <Text style={styles.title}>Your Profile</Text>
+              <Text style={styles.subtitle}>Customize your roommate preferences</Text>
+            </View>
           </View>
 
           {/* Profile Photo Section */}
@@ -82,6 +86,7 @@ export default function Profile() {
             <TouchableOpacity style={styles.imageContainer} onPress={handleImagePress}>
               <Image source={{ uri: profile.profileImage }} style={styles.profileImage} />
               <View style={styles.imageOverlay}>
+                <Ionicons name="camera" size={16} color="#FFFFFF" />
                 <Text style={styles.imageOverlayText}>Tap to change</Text>
               </View>
             </TouchableOpacity>
@@ -243,6 +248,7 @@ export default function Profile() {
 
           {/* Save Button */}
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Ionicons name="checkmark-circle" size={24} color="#FFFFFF" />
             <Text style={styles.saveButtonText}>Save Profile</Text>
           </TouchableOpacity>
 
@@ -257,7 +263,7 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F8FAFC',
   },
   scrollView: {
     flex: 1,
@@ -267,43 +273,48 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
   },
+  headerContent: {
+    alignItems: 'center',
+  },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#1C1C1E',
+    color: '#1E293B',
     textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: '#64748B',
     textAlign: 'center',
-    marginTop: 5,
+    lineHeight: 24,
   },
   section: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
     marginTop: 20,
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 24,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#1C1C1E',
-    marginBottom: 15,
+    color: '#1E293B',
+    marginBottom: 16,
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#8E8E93',
-    marginBottom: 15,
+    color: '#64748B',
+    marginBottom: 16,
   },
   imageContainer: {
     alignItems: 'center',
@@ -320,16 +331,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     borderBottomLeftRadius: 60,
     borderBottomRightRadius: 60,
     paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imageOverlayText: {
     color: '#FFFFFF',
     textAlign: 'center',
     fontSize: 12,
     fontWeight: '600',
+    marginLeft: 4,
   },
   inputGroup: {
     marginBottom: 20,
@@ -337,18 +352,18 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#1E293B',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 8,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
-    color: '#1C1C1E',
+    backgroundColor: '#F8FAFC',
+    color: '#1E293B',
   },
   textArea: {
     height: 100,
@@ -363,7 +378,7 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#1E293B',
     fontWeight: '500',
   },
   interestsContainer: {
@@ -372,43 +387,49 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   interestTag: {
-    backgroundColor: '#E5E5EA',
+    backgroundColor: '#F1F5F9',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 20,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   interestTagSelected: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1',
   },
   interestText: {
     fontSize: 14,
-    color: '#1C1C1E',
+    color: '#475569',
     fontWeight: '500',
   },
   interestTextSelected: {
     color: '#FFFFFF',
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6366F1',
     marginHorizontal: 20,
     marginTop: 30,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#007AFF',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    shadowColor: '#6366F1',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   saveButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 8,
   },
   bottomSpacing: {
     height: 40,

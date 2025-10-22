@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { View, Text, StyleSheet, SafeAreaView, Dimensions, Image } from 'react-native';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -23,59 +23,69 @@ export default function Home() {
     })();
   }, []);
 
-  // Create Google Maps embed URL with iframe
-  const getMapUrl = () => {
+  // Get static map image URL
+  const getMapImageUrl = () => {
     const lat = location?.coords.latitude || 37.78825;
     const lng = location?.coords.longitude || -122.4324;
-    const apiKey = Constants.expoConfig?.extra?.googleMapsApiKey || 'YOUR_GOOGLE_MAPS_API_KEY';
+    const apiKey = Constants.expoConfig?.extra?.googleMapsApiKey || 'AIzaSyA4PyrL5urs9GTPX5r9lk3RuVuiBUHcIn8';
     
-    // Create HTML with iframe for Google Maps Embed API
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            body { margin: 0; padding: 0; }
-            iframe { width: 100%; height: 100%; border: none; }
-          </style>
-        </head>
-        <body>
-          <iframe 
-            src="https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${lat},${lng}&zoom=15"
-            allowfullscreen>
-          </iframe>
-        </body>
-      </html>
-    `;
-    
-    return html;
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=400x300&maptype=roadmap&markers=color:red%7C${lat},${lng}&key=${apiKey}`;
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.headerGradient}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Ionicons name="home" size={32} color="#FFFFFF" />
+            <Text style={styles.title}>Roommate Finder</Text>
+            <Text style={styles.subtitle}>Find your perfect match today</Text>
+          </View>
+        </View>
+      </View>
+      
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Roommate Finder</Text>
-        <Text style={styles.subtitle}>Find your perfect roommate match today</Text>
-        
         <View style={styles.mapContainer}>
-          <WebView
+          <View style={styles.mapHeader}>
+            <Ionicons name="location" size={20} color="#6366F1" />
+            <Text style={styles.mapTitle}>Your Location</Text>
+          </View>
+          <Image
+            source={{ uri: getMapImageUrl() }}
             style={styles.map}
-            source={{ html: getMapUrl() }}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-            scalesPageToFit={true}
+            resizeMode="cover"
           />
+          <View style={styles.mapOverlay}>
+            <Text style={styles.mapOverlayText}>
+              📍 {location ? `${location.coords.latitude.toFixed(4)}, ${location.coords.longitude.toFixed(4)}` : 'Getting location...'}
+            </Text>
+          </View>
         </View>
         
         {errorMsg && (
-          <Text style={styles.errorText}>{errorMsg}</Text>
+          <View style={styles.errorContainer}>
+            <Ionicons name="warning" size={20} color="#EF4444" />
+            <Text style={styles.errorText}>{errorMsg}</Text>
+          </View>
         )}
         
-        <Text style={styles.note}>
-          Note: Add your Google Maps API key to see the map
-        </Text>
+        <View style={styles.featuresContainer}>
+          <View style={styles.featureCard}>
+            <Ionicons name="people" size={24} color="#6366F1" />
+            <Text style={styles.featureTitle}>Smart Matching</Text>
+            <Text style={styles.featureDescription}>AI-powered compatibility</Text>
+          </View>
+          <View style={styles.featureCard}>
+            <Ionicons name="shield-checkmark" size={24} color="#10B981" />
+            <Text style={styles.featureTitle}>Verified Profiles</Text>
+            <Text style={styles.featureDescription}>Safe and secure</Text>
+          </View>
+          <View style={styles.featureCard}>
+            <Ionicons name="chatbubbles" size={24} color="#F59E0B" />
+            <Text style={styles.featureTitle}>Easy Chat</Text>
+            <Text style={styles.featureDescription}>Connect instantly</Text>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -84,57 +94,140 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F8FAFC',
+  },
+  headerGradient: {
+    backgroundColor: '#667eea',
+    paddingTop: 20,
+    paddingBottom: 30,
+  },
+  header: {
+    paddingHorizontal: 20,
+  },
+  headerContent: {
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 10,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    lineHeight: 24,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1C1C1E',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#8E8E93',
-    textAlign: 'center',
-    lineHeight: 24,
+  mapContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
     marginBottom: 20,
   },
-  mapContainer: {
-    width: width - 40,
-    height: width - 40, // Makes it square
-    alignSelf: 'center',
+  mapHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  mapTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginLeft: 8,
+  },
+  map: {
+    height: width - 80,
+    backgroundColor: '#F1F5F9',
+  },
+  mapOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+  },
+  mapOverlayText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 3,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  errorText: {
+    color: '#DC2626',
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  featuresContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  featureCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 20,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 4,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  map: {
-    flex: 1,
-  },
-  errorText: {
-    color: '#FF3B30',
-    textAlign: 'center',
-    marginTop: 10,
+  featureTitle: {
     fontSize: 14,
-  },
-  note: {
-    color: '#8E8E93',
+    fontWeight: '600',
+    color: '#1E293B',
+    marginTop: 8,
+    marginBottom: 4,
     textAlign: 'center',
-    marginTop: 10,
+  },
+  featureDescription: {
     fontSize: 12,
-    fontStyle: 'italic',
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });
 
