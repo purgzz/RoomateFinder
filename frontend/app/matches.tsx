@@ -25,7 +25,7 @@ const profiles = [
     budget: '$600-900',
     location: 'Midtown',
     interests: ['Art', 'Sustainability', 'Yoga', 'Reading'],
-    image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop',
+    image: 'https://images.unsplash.com/photo-1687610265701-1255ece05d75?w=400&h=600&fit=crop',
   },
   {
     id: 3,
