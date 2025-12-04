@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
 import { 
   View, 
   Text, 
@@ -43,16 +44,25 @@ export default function Profile() {
     Alert.alert('Profile Updated', 'Your profile has been saved successfully!');
   };
 
-  const handleImagePress = () => {
-    Alert.alert(
-      'Change Profile Photo',
-      'Choose an option',
-      [
-        { text: 'Camera', onPress: () => console.log('Camera') },
-        { text: 'Photo Library', onPress: () => console.log('Photo Library') },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
+  
+  const handleImagePress = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission required", "Permission to access camera roll is required!");
+      return;
+    }
+  
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+  
+    if (!pickerResult.canceled) {
+      setProfile({ ...profile, profileImage: pickerResult.assets[0].uri });
+    }
   };
 
   const handleLogout = () => {
