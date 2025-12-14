@@ -16,7 +16,7 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearCurrentUserId } from "../src/services/auth";
 
 const { width } = Dimensions.get('window');
 
@@ -67,23 +67,23 @@ export default function Profile() {
 
   const handleLogout = () => {
     Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
+      "Log Out",
+      "Are you sure you want to log out?",
       [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Log Out', 
-          style: 'destructive',
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Log Out",
+          style: "destructive",
           onPress: async () => {
             try {
-              await AsyncStorage.removeItem('@user_token');
-              router.replace('/login');
+              await clearCurrentUserId();
+              router.replace("/login");
             } catch (err) {
-              console.warn('Logout failed', err);
-              Alert.alert('Logout failed', 'Please try again.');
+              console.warn("Logout failed", err);
+              Alert.alert("Logout failed", "Please try again.");
             }
-          } 
-        }
+          },
+        },
       ]
     );
   };
@@ -289,7 +289,14 @@ export default function Profile() {
           </TouchableOpacity>
 
           {/* Log Out Button */}
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={async () => {
+              console.log("LOGOUT pressed");
+              await clearCurrentUserId();
+              router.replace("/login");
+            }}
+          >
             <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
             <Text style={styles.logoutButtonText}>Log Out</Text>
           </TouchableOpacity>

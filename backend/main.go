@@ -1,12 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/rs/cors"
 )
 
@@ -15,20 +20,88 @@ type Response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type SwipeCreateRequest struct {
+	SwiperUserID    int    `json:"swiper_user_id"`
+	TargetProfileID int    `json:"target_profile_id"`
+	Action          string `json:"action"` // "like" or "pass"
+}
+
+type Swipe struct {
+	ID              int       `json:"id"`
+	SwiperUserID    int       `json:"swiper_user_id"`
+	TargetProfileID int       `json:"target_profile_id"`
+	Action          string    `json:"action"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
+func createSwipeHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req SwipeCreateRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			respondJSON(w, http.StatusBadRequest, Response{Message: "Invalid request body"})
+			return
+		}
+
+		if req.Action != "like" && req.Action != "pass" {
+			respondJSON(w, http.StatusBadRequest, Response{Message: "action must be 'like' or 'pass'"})
+			return
+		}
+
+		var saved Swipe
+		err := db.QueryRow(
+			`INSERT INTO swipes (swiper_user_id, target_profile_id, action)
+			 VALUES ($1, $2, $3)
+			 RETURNING id, swiper_user_id, target_profile_id, action, created_at`,
+			req.SwiperUserID, req.TargetProfileID, req.Action,
+		).Scan(&saved.ID, &saved.SwiperUserID, &saved.TargetProfileID, &saved.Action, &saved.CreatedAt)
+
+		if err != nil {
+			log.Printf("swipe insert failed: %v", err) // <-- important: tells us the real reason in terminal
+			respondJSON(w, http.StatusInternalServerError, Response{Message: "DB insert failed"})
+			return
+		}
+
+		respondJSON(w, http.StatusCreated, Response{
+			Message: "Swipe saved",
+			Data:    saved,
+		})
+	}
+}
+
 type User struct {
-	ID        string    `json:"id"`
+	ID        int       `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 func main() {
+	if err := godotenv.Load("../.env"); err != nil {
+		_ = godotenv.Load()
+	}
+
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		log.Fatal("create .env from .env.example")
+	}
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.Fatal("DB ping failed:", err)
+	}
+	fmt.Println("DB connected!")
 	router := mux.NewRouter()
 
 	// API routes
 	router.HandleFunc("/api/health", healthCheckHandler).Methods("GET")
-	router.HandleFunc("/api/users", getUsersHandler).Methods("GET")
-	router.HandleFunc("/api/users", createUserHandler).Methods("POST")
+	router.HandleFunc("/api/users", getUsersHandler(db)).Methods("GET")
+	router.HandleFunc("/api/users", createUserHandler(db)).Methods("POST")
+	router.HandleFunc("/api/swipes", createSwipeHandler(db)).Methods("POST")
 
 	// CORS configuration
 	c := cors.New(cors.Options{
@@ -58,48 +131,65 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, response)
 }
 
-func getUsersHandler(w http.ResponseWriter, r *http.Request) {
-	// Mock data for now
-	users := []User{
-		{
-			ID:        "1",
-			Name:      "John Doe",
-			Email:     "john@example.com",
-			CreatedAt: time.Now(),
-		},
-		{
-			ID:        "2",
-			Name:      "Jane Smith",
-			Email:     "jane@example.com",
-			CreatedAt: time.Now(),
-		},
-	}
+func getUsersHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query(`SELECT id, name, email, created_at FROM users ORDER BY created_at DESC`)
+		if err != nil {
+			respondJSON(w, http.StatusInternalServerError, Response{Message: "DB query failed"})
+			return
+		}
+		defer rows.Close()
 
-	response := Response{
-		Message: "Users retrieved successfully",
-		Data:    users,
+		users := []User{}
+		for rows.Next() {
+			var u User
+			if err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.CreatedAt); err != nil {
+				respondJSON(w, http.StatusInternalServerError, Response{Message: "DB scan failed"})
+				return
+			}
+			users = append(users, u)
+		}
+
+		respondJSON(w, http.StatusOK, Response{
+			Message: "Users retrieved successfully",
+			Data:    users,
+		})
 	}
-	respondJSON(w, http.StatusOK, response)
 }
 
-func createUserHandler(w http.ResponseWriter, r *http.Request) {
-	var user User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		respondJSON(w, http.StatusBadRequest, Response{
-			Message: "Invalid request body",
+func createUserHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var input struct {
+			Name  string `json:"name"`
+			Email string `json:"email"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+			respondJSON(w, http.StatusBadRequest, Response{Message: "Invalid request body"})
+			return
+		}
+		if input.Name == "" || input.Email == "" {
+			respondJSON(w, http.StatusBadRequest, Response{Message: "Name and email are required"})
+			return
+		}
+
+		var u User
+		err := db.QueryRow(
+			`INSERT INTO users (name, email) VALUES ($1, $2)
+			 RETURNING id, name, email, created_at`,
+			input.Name, input.Email,
+		).Scan(&u.ID, &u.Name, &u.Email, &u.CreatedAt)
+
+		if err != nil {
+			respondJSON(w, http.StatusConflict, Response{Message: "Could not create user (maybe email already exists)"})
+			return
+		}
+
+		respondJSON(w, http.StatusCreated, Response{
+			Message: "User created successfully",
+			Data:    u,
 		})
-		return
 	}
-
-	// In a real app, you would save to a database
-	user.ID = "3"
-	user.CreatedAt = time.Now()
-
-	response := Response{
-		Message: "User created successfully",
-		Data:    user,
-	}
-	respondJSON(w, http.StatusCreated, response)
 }
 
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {

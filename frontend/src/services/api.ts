@@ -21,6 +21,12 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface swipeRequest {
+  swiper_user_id: number;
+  target_profile_id: number;
+  action: "like" | "pass";
+}
+
 export const checkHealth = async () => {
   const response = await api.get<ApiResponse<{ status: string; time: string }>>('/health');
   return response.data;
@@ -35,6 +41,11 @@ export const createUser = async (user: User) => {
   const response = await api.post<ApiResponse<User>>('/users', user);
   return response.data;
 };
+
+export const createSwipe = async (swipe: swipeRequest) => {
+  const response = await api.post<ApiResponse<any>>("/swipes", swipe)
+  return response.data
+}
 
 export default api;
 
