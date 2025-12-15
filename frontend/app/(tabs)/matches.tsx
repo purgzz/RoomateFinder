@@ -12,8 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { createSwipe } from "../src/services/api";
-import { getCurrentUserId } from "../src/services/auth";
+import { createSwipe } from "../../src/services/api";
+import { getCurrentUserId } from "../../src/services/auth";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
