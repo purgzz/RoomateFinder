@@ -31,19 +31,28 @@ RoomateFinder/
 - **Go 1.21+** - High-performance backend
 - **Gorilla Mux** - HTTP routing
 - **CORS** - Cross-origin resource sharing
+- **joho/godotenv** for .env
+
+#### Database
+
+- **Docker Desktop** - Local database
+- **PostegreSQL16** - relational database
 
 ## Quick Start
 
 ### 1. Database requirements
 
 Run the commands from root directory
+Run Docker Desktop beforehand
 
 ```bash
 copy .env.example .env
-if macOS/Linux: cp .enc.example .env
+if macOS/Linux:
+cp .enc.example .env
 
 docker compose up -d
-confirm db running: docker compose ps
+confirm db running:
+docker compose ps
 ```
 
 ### 2. Start the Backend
@@ -53,7 +62,7 @@ Run these commands in the root directory to start the backend
 ```bash
 cd backend
 go mod download
-go run main.go
+go run .
 ```
 
 The backend will start on `http://localhost:8080`
